@@ -68,4 +68,12 @@ jobs:
           commit: ${{ github.sha }}
           tag: ${{ steps.tag.outputs.TAG }}
           token: ${{ github.token }}
+      # publish list of jar files that are required for CiscoM31/conductor-community
+      - name: Upload conductor-core JAR
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "core/build/libs/conductor-core-*.jar"
+          commit: ${{ github.sha }}
+          tag: ${{ steps.tag.outputs.TAG }}
+          token: ${{ github.token }}
 
