@@ -934,6 +934,13 @@ public abstract class AbstractProtoMapper {
             to.setExternalOutputPayloadStoragePath( from.getExternalOutputPayloadStoragePath() );
         }
         to.setWorkflowPriority( from.getWorkflowPriority() );
+        if (from.getTaskDescription() != null) {
+            to.setTaskDescription( from.getTaskDescription() );
+        }
+        if (from.getReferenceTaskName() != null) {
+            to.setReferenceTaskName( from.getReferenceTaskName() );
+        }
+        to.setRetryCount( from.getRetryCount() );
         if (from.getDomain() != null) {
             to.setDomain( from.getDomain() );
         }
@@ -961,6 +968,9 @@ public abstract class AbstractProtoMapper {
         to.setExternalInputPayloadStoragePath( from.getExternalInputPayloadStoragePath() );
         to.setExternalOutputPayloadStoragePath( from.getExternalOutputPayloadStoragePath() );
         to.setWorkflowPriority( from.getWorkflowPriority() );
+        to.setTaskDescription( from.getTaskDescription() );
+        to.setReferenceTaskName( from.getReferenceTaskName() );
+        to.setRetryCount( from.getRetryCount() );
         to.setDomain( from.getDomain() );
         return to;
     }
