@@ -57,9 +57,9 @@ jobs:
           path: 'buildscan.log'
       - name: Create build tag
         run: |
-          export CORE_CONDUCTOR_VERSION=$(./gradlew conductor-workflow-event-listener:dependencies | grep conductor-core | grep ">" | tail -1 | cut -d '>' -f 2 | cut -d ' ' -f 2)
-          echo "Tag using Conductor core version $CORE_CONDUCTOR_VERSION"
-          echo "TAG=$CORE_CONDUCTOR_VERSION-build.${{ github.run_number }}+${{ github.sha }}" >> $GITHUB_OUTPUT
+          export CONDUCTOR_VERSION=3.13
+          echo "Tag using Conductor version $CONDUCTOR_VERSION"
+          echo "TAG=$CONDUCTOR_VERSION-build.${{ github.run_number }}+${{ github.sha }}" >> $GITHUB_OUTPUT
         id: tag
       - name: Upload conductor-server JAR
         uses: ncipollo/release-action@v1
