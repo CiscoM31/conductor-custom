@@ -128,12 +128,12 @@ public class TaskSummary {
         this.status = task.getStatus();
         this.reasonForIncompletion = task.getReasonForIncompletion();
         this.queueWaitTime = task.getQueueWaitTime();
-        this.taskDescription = task.getTaskDescription();
+        this.taskDescription = task.getWorkflowTask().getDescription();
         this.referenceTaskName = task.getReferenceTaskName();
         this.retryCount = task.getRetryCount();
         this.domain = task.getDomain();
 
-	/*
+        /*
          * To enable Workflow/Task Summary Input/Output JSON Serialization, use below config
          * conductor.app.summary-input-output-json-serialization.enabled=true
          *
@@ -427,48 +427,48 @@ public class TaskSummary {
         this.workflowPriority = workflowPriority;
     }
 
-    /** 
-     * @return the taskDescription 
+    /**
+     * @return the taskDescription
      */
     public String getTaskDescription() {
         return taskDescription;
     }
 
-    /** 
+    /**
      * @param taskDescription the taskDescription to set
      */
     public void setTaskDescription(String taskDescription) {
         this.taskDescription = taskDescription;
     }
 
-    /** 
-     * @return the referenceTaskName 
+    /**
+     * @return the referenceTaskName
      */
     public String getReferenceTaskName() {
         return referenceTaskName;
     }
 
-    /** 
-     * @param referenceTaskName the referenceTaskName to set 
+    /**
+     * @param referenceTaskName the referenceTaskName to set
      */
     public void setReferenceTaskName(String referenceTaskName) {
         this.referenceTaskName = referenceTaskName;
     }
 
-    /** 
+    /**
      * @return the retryCount
      */
     public int getRetryCount() {
         return retryCount;
     }
 
-    /** 
-     * @param retryCount the retryCount to set 
+    /**
+     * @param retryCount the retryCount to set
      */
     public void setRetryCount(int retryCount) {
         this.retryCount = retryCount;
     }
-    
+
     /**
      * @return the domain that the task was scheduled in
      */
@@ -507,9 +507,9 @@ public class TaskSummary {
                 && Objects.equals(getTaskDefName(), that.getTaskDefName())
                 && getTaskType().equals(that.getTaskType())
                 && getTaskId().equals(that.getTaskId())
-		&& Objects.equals(getTaskDescription(), that.getTaskDescription())
-		&& Objects.equals(getReferenceTaskName(), that.getReferenceTaskName())
-		&& getRetryCount() == that.getRetryCount()
+                && Objects.equals(getTaskDescription(), that.getTaskDescription())
+                && Objects.equals(getReferenceTaskName(), that.getReferenceTaskName())
+                && getRetryCount() == that.getRetryCount()
                 && Objects.equals(getDomain(), that.getDomain());
     }
 
@@ -531,9 +531,9 @@ public class TaskSummary {
                 getTaskType(),
                 getTaskId(),
                 getWorkflowPriority(),
-		getTaskDescription(),
-		getReferenceTaskName(),
-		getRetryCount(),
+                getTaskDescription(),
+                getReferenceTaskName(),
+                getRetryCount(),
                 getDomain());
     }
 }
