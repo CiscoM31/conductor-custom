@@ -128,7 +128,9 @@ public class TaskSummary {
         this.status = task.getStatus();
         this.reasonForIncompletion = task.getReasonForIncompletion();
         this.queueWaitTime = task.getQueueWaitTime();
-        this.taskDescription = task.getWorkflowTask().getDescription();
+        if (task.getWorkflowTask() != null) {
+            this.taskDescription = task.getWorkflowTask().getDescription();
+        }
         this.referenceTaskName = task.getReferenceTaskName();
         this.retryCount = task.getRetryCount();
         this.domain = task.getDomain();
