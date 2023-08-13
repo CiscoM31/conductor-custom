@@ -64,7 +64,7 @@ jobs:
       - name: Upload conductor-server JAR
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "community-server/build/libs/conductor-community-server-*-boot.jar"
+          artifacts: "server/build/libs/conductor-server-*-boot.jar"
           commit: ${{ github.sha }}
           tag: ${{ steps.tag.outputs.TAG }}
           token: ${{ github.token }}
