@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolationException;
 
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +51,14 @@ public class WorkflowBulkServiceTest {
         }
 
         @Bean
-        public WorkflowBulkService workflowBulkService(WorkflowExecutor workflowExecutor) {
-            return new WorkflowBulkServiceImpl(workflowExecutor);
+        ExecutionDAOFacade executionDAOFacade() {
+            return mock(ExecutionDAOFacade.class);
+        }
+
+
+        @Bean
+        public WorkflowBulkService workflowBulkService(WorkflowExecutor workflowExecutor,ExecutionDAOFacade executionDAOFacade) {
+            return new WorkflowBulkServiceImpl(workflowExecutor,executionDAOFacade);
         }
     }
 

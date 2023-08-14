@@ -13,10 +13,7 @@
 package com.netflix.conductor.core.dal;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -691,6 +688,18 @@ public class ExecutionDAOFacade {
                 ? indexDAO.getTaskExecutionLogs(taskId)
                 : Collections.emptyList();
     }
+
+    /**
+     * Return all workflow ids involved in the parent workflow. Parent workflow is identified by
+     * correlation id
+     *
+     * @param correlationId
+     * @return List of workflow ids involved in a parent workflow
+     */
+    public Set<String> getWorkflowIdSetByCorrelationId(String correlationId) {
+        return executionDAO.getWorkflowIdSetByCorrelationId(correlationId);
+    }
+
 
     /**
      * Populates the workflow input data and the tasks input/output data if stored in external

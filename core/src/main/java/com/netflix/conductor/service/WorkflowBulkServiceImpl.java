@@ -13,7 +13,9 @@
 package com.netflix.conductor.service;
 
 import java.util.List;
+import java.util.Set;
 
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,12 @@ public class WorkflowBulkServiceImpl implements WorkflowBulkService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowBulkService.class);
     private final WorkflowExecutor workflowExecutor;
 
-    public WorkflowBulkServiceImpl(WorkflowExecutor workflowExecutor) {
+    private final ExecutionDAOFacade executionDAOFacade;
+
+
+    public WorkflowBulkServiceImpl(WorkflowExecutor workflowExecutor,ExecutionDAOFacade executionDAOFacade) {
         this.workflowExecutor = workflowExecutor;
+        this.executionDAOFacade=executionDAOFacade;
     }
 
     /**
@@ -162,6 +168,66 @@ public class WorkflowBulkServiceImpl implements WorkflowBulkService {
                 bulkResponse.appendFailedResponse(workflowId, e.getMessage());
             }
         }
+        return bulkResponse;
+    }
+
+    /**
+     * Terminate workflows execution.
+     *
+     * @param workflowIds - list of workflow Ids to perform terminate operation on
+     * @param archiveWorkflow Archives the workflow
+     * @return bulk response object containing a list of succeeded workflows and a list of failed
+     *     ones with errors
+     */
+    public BulkResponse delete(List<String> workflowIds, boolean archiveWorkflow) {
+        BulkResponse bulkResponse = new BulkResponse();
+        for (String workflowId : workflowIds) {
+            try {
+                executionDAOFacade.removeWorkflow(workflowId, archiveWorkflow);
+                bulkResponse.appendSuccessResponse(workflowId);
+            } catch (Exception e) {
+                LOGGER.error(
+                        "bulk terminate exception, workflowId {}, message: {} ",
+                        workflowId,
+                        e.getMessage(),
+                        e);
+                bulkResponse.appendFailedResponse(workflowId, e.getMessage());
+            }
+        }
+        return bulkResponse;
+    }
+
+
+    public BulkResponse removeCorrelatedWorkflows(
+            String correlationId, boolean archiveWorkflow, boolean isPollProcessing) {
+        BulkResponse bulkResponse = new BulkResponse();
+        long startTime = System.currentTimeMillis();
+        Set<String> result = executionDAOFacade.getWorkflowIdSetByCorrelationId(correlationId);
+        long corrDuration = System.currentTimeMillis() - startTime;
+        LOGGER.info(
+                "workflow ids from correlation id {} {} duration {} archiveWorkflow {} isPollProcessing {}",
+                correlationId,
+                result,
+                corrDuration,
+                archiveWorkflow,
+                isPollProcessing);
+        result.stream()
+                .parallel()
+                .forEach(
+                        workflowId -> {
+                            try {
+                                executionDAOFacade.removeWorkflow(
+                                        workflowId, archiveWorkflow, isPollProcessing);
+                                bulkResponse.appendSuccessResponse(workflowId);
+                            } catch (Exception e) {
+                                LOGGER.error(
+                                        "bulk terminate exception, workflowId {}, message: {} ",
+                                        workflowId,
+                                        e.getMessage(),
+                                        e);
+                                bulkResponse.appendFailedResponse(workflowId, e.getMessage());
+                            }
+                        });
         return bulkResponse;
     }
 }
