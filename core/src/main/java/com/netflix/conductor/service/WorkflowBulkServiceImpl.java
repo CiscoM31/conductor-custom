@@ -217,7 +217,7 @@ public class WorkflowBulkServiceImpl implements WorkflowBulkService {
                         workflowId -> {
                             try {
                                 executionDAOFacade.removeWorkflow(
-                                        workflowId, archiveWorkflow, isPollProcessing);
+                                        workflowId, archiveWorkflow);
                                 bulkResponse.appendSuccessResponse(workflowId);
                             } catch (Exception e) {
                                 LOGGER.error(
