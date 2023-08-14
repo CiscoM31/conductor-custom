@@ -764,4 +764,12 @@ public class RedisExecutionDAO extends BaseDynoDAO
             throw new IllegalArgumentException(npe.getMessage(), npe);
         }
     }
+
+    public Set<String> getWorkflowIdSetByCorrelationId(String correlationId) {
+        Set<String> idSet = jedisProxy.smembers(nsKey(CORR_ID_TO_WORKFLOWS, correlationId));
+        if (idSet == null) {
+            idSet = new HashSet<>();
+        }
+        return idSet;
+    }
 }
