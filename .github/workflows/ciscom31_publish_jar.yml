@@ -65,7 +65,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           # publish list of jar files that are required for CiscoM31/conductor-community
-          artifacts: "server/build/libs/conductor-server-*-boot.jar,core/build/libs/conductor-core-*.jar"
+          artifacts: "server/build/libs/conductor-server-*-boot.jar,core/build/libs/conductor-core-*-SNAPSHOT.jar,common/build/libs/conductor-common-*-SNAPSHOT.jar,rest/build/libs/conductor-rest-*-SNAPSHOT.jar"
           commit: ${{ github.sha }}
           tag: ${{ steps.tag.outputs.TAG }}
           token: ${{ github.token }}
