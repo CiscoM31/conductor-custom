@@ -19,7 +19,6 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolationException;
 
-import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 
 import static com.netflix.conductor.TestUtils.getConstraintViolationMessages;
@@ -55,10 +55,10 @@ public class WorkflowBulkServiceTest {
             return mock(ExecutionDAOFacade.class);
         }
 
-
         @Bean
-        public WorkflowBulkService workflowBulkService(WorkflowExecutor workflowExecutor,ExecutionDAOFacade executionDAOFacade) {
-            return new WorkflowBulkServiceImpl(workflowExecutor,executionDAOFacade);
+        public WorkflowBulkService workflowBulkService(
+                WorkflowExecutor workflowExecutor, ExecutionDAOFacade executionDAOFacade) {
+            return new WorkflowBulkServiceImpl(workflowExecutor, executionDAOFacade);
         }
     }
 

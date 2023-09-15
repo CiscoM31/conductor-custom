@@ -700,7 +700,6 @@ public class ExecutionDAOFacade {
         return executionDAO.getWorkflowIdSetByCorrelationId(correlationId);
     }
 
-
     /**
      * Populates the workflow input data and the tasks input/output data if stored in external
      * payload storage.
