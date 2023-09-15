@@ -70,11 +70,11 @@ public interface WorkflowBulkService {
 
     BulkResponse delete(
             @NotEmpty(message = "WorkflowIds list cannot be null.")
-            @Size(
-                    max = MAX_REQUEST_ITEMS,
-                    message =
-                            "Cannot process more than {max} workflows. Please use multiple requests.")
-            List<String> workflowIds,
+                    @Size(
+                            max = MAX_REQUEST_ITEMS,
+                            message =
+                                    "Cannot process more than {max} workflows. Please use multiple requests.")
+                    List<String> workflowIds,
             boolean archiveWorkflow);
 
     BulkResponse removeCorrelatedWorkflows(

@@ -107,7 +107,6 @@ public class WorkflowBulkResource {
         return workflowBulkService.terminate(workflowIds, reason);
     }
 
-
     /**
      * Remove workflows for a given correlation id.
      *
@@ -121,9 +120,9 @@ public class WorkflowBulkResource {
     public BulkResponse removeCorrelatedWorkflows(
             @PathVariable("correlationId") String correlationId,
             @RequestParam(value = "archiveWorkflow", defaultValue = "true", required = true)
-            boolean archiveWorkflow,
+                    boolean archiveWorkflow,
             @RequestParam(value = "isPollProcessing", defaultValue = "false", required = true)
-            boolean isPollProcessing) {
+                    boolean isPollProcessing) {
         return workflowBulkService.removeCorrelatedWorkflows(
                 correlationId, archiveWorkflow, isPollProcessing);
     }

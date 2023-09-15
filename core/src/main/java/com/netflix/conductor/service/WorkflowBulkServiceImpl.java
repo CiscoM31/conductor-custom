@@ -15,7 +15,6 @@ package com.netflix.conductor.service;
 import java.util.List;
 import java.util.Set;
 
-import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.netflix.conductor.annotations.Audit;
 import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.common.model.BulkResponse;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 
 @Audit
@@ -35,10 +35,10 @@ public class WorkflowBulkServiceImpl implements WorkflowBulkService {
 
     private final ExecutionDAOFacade executionDAOFacade;
 
-
-    public WorkflowBulkServiceImpl(WorkflowExecutor workflowExecutor,ExecutionDAOFacade executionDAOFacade) {
+    public WorkflowBulkServiceImpl(
+            WorkflowExecutor workflowExecutor, ExecutionDAOFacade executionDAOFacade) {
         this.workflowExecutor = workflowExecutor;
-        this.executionDAOFacade=executionDAOFacade;
+        this.executionDAOFacade = executionDAOFacade;
     }
 
     /**
@@ -197,7 +197,6 @@ public class WorkflowBulkServiceImpl implements WorkflowBulkService {
         return bulkResponse;
     }
 
-
     public BulkResponse removeCorrelatedWorkflows(
             String correlationId, boolean archiveWorkflow, boolean isPollProcessing) {
         BulkResponse bulkResponse = new BulkResponse();
@@ -216,8 +215,7 @@ public class WorkflowBulkServiceImpl implements WorkflowBulkService {
                 .forEach(
                         workflowId -> {
                             try {
-                                executionDAOFacade.removeWorkflow(
-                                        workflowId, archiveWorkflow);
+                                executionDAOFacade.removeWorkflow(workflowId, archiveWorkflow);
                                 bulkResponse.appendSuccessResponse(workflowId);
                             } catch (Exception e) {
                                 LOGGER.error(
