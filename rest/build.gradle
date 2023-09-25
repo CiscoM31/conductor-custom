@@ -9,3 +9,5 @@ dependencies {
 
     implementation "org.springdoc:springdoc-openapi-ui:${revOpenapi}"
 }
+
+group = 'com.cisco.conductor'
