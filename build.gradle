@@ -93,25 +93,6 @@ allprojects {
     }
 
 
-    publishing {
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                group = "com.cisco.conductor"
-                url = uri("https://maven.pkg.github.com/CiscoM31/repository")
-                credentials {
-                    username = "${artifactory_username}"
-                    password = "${artifactory_password}"
-                }
-            }
-        }
-        publications {
-            gpr(MavenPublication) {
-                from(components.java)
-            }
-        }
-    }
-
     dependencyManagement {
         imports {
             // dependency versions for the BOM can be found at https://docs.spring.io/spring-boot/docs/2.7.3/reference/htmlsingle/#appendix.dependency-versions
