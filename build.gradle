@@ -39,6 +39,9 @@ plugins {
 // Establish version and status
 ext.githubProjectName = rootProject.name // Change if github project name is not the same as the root project's name
 
+// Setting this version to project as the generated jars need to be differentiated from netflix conductor jars like conductor-common-3.13.8.jar
+version = "3.13.8-cisco"
+
 subprojects {
     tasks.withType(Javadoc).all { enabled = false }
 }
@@ -51,6 +54,7 @@ allprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'java-library'
     apply plugin: 'project-report'
+    apply plugin: 'maven-publish'
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -87,6 +91,7 @@ allprojects {
             }
         }
     }
+
 
     dependencyManagement {
         imports {

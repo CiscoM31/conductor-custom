@@ -2,6 +2,9 @@ configurations {
     annotationsProcessorCodegen
 }
 
+group = 'com.cisco.conductor'
+
+
 dependencies {
     implementation project(':conductor-annotations')
     annotationsProcessorCodegen project(':conductor-annotations-processor')

@@ -14,12 +14,7 @@ package com.netflix.conductor.rest.controllers;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.netflix.conductor.common.model.BulkResponse;
 import com.netflix.conductor.service.WorkflowBulkService;
@@ -110,5 +105,25 @@ public class WorkflowBulkResource {
             @RequestBody List<String> workflowIds,
             @RequestParam(value = "reason", required = false) String reason) {
         return workflowBulkService.terminate(workflowIds, reason);
+    }
+
+    /**
+     * Remove workflows for a given correlation id.
+     *
+     * @param correlationId - correlationId of the workflows
+     * @param archiveWorkflow - flag to specify whether to archive a workflow, by default true
+     * @return bulk response object containing a list of succeeded workflows and a list of failed
+     *     ones with errors
+     */
+    @DeleteMapping("/correlationId/{correlationId}")
+    @Operation(summary = "Remove workflows for a given correlation id")
+    public BulkResponse removeCorrelatedWorkflows(
+            @PathVariable("correlationId") String correlationId,
+            @RequestParam(value = "archiveWorkflow", defaultValue = "true", required = true)
+                    boolean archiveWorkflow,
+            @RequestParam(value = "isPollProcessing", defaultValue = "false", required = true)
+                    boolean isPollProcessing) {
+        return workflowBulkService.removeCorrelatedWorkflows(
+                correlationId, archiveWorkflow, isPollProcessing);
     }
 }
