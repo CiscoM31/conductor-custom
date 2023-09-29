@@ -131,6 +131,11 @@ public class TaskServiceImpl implements TaskService {
                 "Update Task: {} with callback time: {}",
                 taskResult,
                 taskResult.getCallbackAfterSeconds());
+        LOGGER.info(
+                "Task update request taskId {} workflowInstanceId {} status {}",
+                taskResult.getTaskId(),
+                taskResult.getWorkflowInstanceId(),
+                taskResult.getStatus());
         executionService.updateTask(taskResult);
         LOGGER.debug(
                 "Task: {} updated successfully with callback time: {}",
