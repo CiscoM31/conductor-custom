@@ -132,7 +132,7 @@ public class TaskServiceImpl implements TaskService {
                 taskResult,
                 taskResult.getCallbackAfterSeconds());
         LOGGER.info(
-                "Task update request commit id taskId {} workflowInstanceId {} status {}",
+                "Task update request taskId {} workflowInstanceId {} status {}",
                 taskResult.getTaskId(),
                 taskResult.getWorkflowInstanceId(),
                 taskResult.getStatus());
