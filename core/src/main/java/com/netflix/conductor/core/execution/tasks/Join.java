@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.common.utils.TaskUtils;
@@ -23,11 +25,14 @@ import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_JOIN;
 
 @Component(TASK_TYPE_JOIN)
 public class Join extends WorkflowSystemTask {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Join.class);
     public Join() {
         super(TASK_TYPE_JOIN);
     }
@@ -57,6 +62,20 @@ public class Join extends WorkflowSystemTask {
                 break;
             }
             TaskModel.Status taskStatus = forkedTask.getStatus();
+
+            // Check if task has more retries before evaluating if JOIN can be processed
+            WorkflowTask workflowTask = forkedTask.getWorkflowTask();
+            if (workflowTask != null) {
+                TaskDef taskDefinition = workflowTask.getTaskDefinition();
+                if (taskDefinition != null) {
+                    if (!taskStatus.isSuccessful() && taskStatus.isRetriable() && forkedTask.getRetryCount() < taskDefinition.getRetryCount()) {
+                        LOGGER.info("Join task evaluation for workflow {} is skipped since forked task {} has retries", workflow.getWorkflowId(), forkedTask.getTaskId());
+                        allDone = false;
+                        break;
+                    }
+                }
+            }
+
             hasFailures = !taskStatus.isSuccessful() && !forkedTask.getWorkflowTask().isOptional();
             if (hasFailures) {
                 failureReason.append(forkedTask.getReasonForIncompletion()).append(" ");
