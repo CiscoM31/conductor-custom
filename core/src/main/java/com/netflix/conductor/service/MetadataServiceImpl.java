@@ -120,7 +120,6 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     /** This function is used to eval condition script before saving the workflow */
-
     /**
      * @param workflowDefList Workflow definitions to be updated.
      */
