@@ -135,16 +135,13 @@ public class MetadataServiceImpl implements MetadataService {
                                                 || t.getType().equalsIgnoreCase("switch"))
                         .collect(Collectors.toList());
         for (WorkflowTask task : tasks) {
-            String taskType = task.getType();
-            String case0 = task.getCaseExpression();
-
             Map<String, Object> map = task.getInputParameters();
             if (task.getType().equalsIgnoreCase("decision")
                     || task.getType().equalsIgnoreCase("switch")) {
                 try {
                     if (task.getCaseExpression() != null) {
                         Object returnValue = ScriptEvaluator.eval(task.getCaseExpression(), map);
-                    } else if (task.getEvaluatorType().equalsIgnoreCase("javascript")) {
+                    } else if ("javascript".equalsIgnoreCase(task.getEvaluatorType())) {
                         Object returnValue = ScriptEvaluator.eval(task.getExpression(), map);
                     }
                 } catch (ScriptException e) {
