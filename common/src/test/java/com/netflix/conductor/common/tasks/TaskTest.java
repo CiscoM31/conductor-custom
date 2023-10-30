@@ -142,7 +142,6 @@ public class TaskTest {
         task.setPublishCount(2);
         task.setLastPublishTime(System.currentTimeMillis());
 
-
         final Task copy = task.deepCopy();
         assertEquals(task, copy);
     }

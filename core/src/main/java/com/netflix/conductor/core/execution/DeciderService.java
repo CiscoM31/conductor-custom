@@ -16,9 +16,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.netflix.conductor.common.run.TaskLog;
-import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.core.listener.TaskStatusListener;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +29,16 @@ import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.common.run.TaskLog;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage.Operation;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage.PayloadType;
 import com.netflix.conductor.common.utils.TaskUtils;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.core.execution.mapper.TaskMapper;
 import com.netflix.conductor.core.execution.mapper.TaskMapperContext;
 import com.netflix.conductor.core.execution.tasks.SystemTaskRegistry;
+import com.netflix.conductor.core.listener.TaskStatusListener;
 import com.netflix.conductor.core.utils.ExternalPayloadStorageUtils;
 import com.netflix.conductor.core.utils.IDGenerator;
 import com.netflix.conductor.core.utils.ParametersUtils;
@@ -46,7 +46,6 @@ import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-import  com.netflix.conductor.core.dal.ExecutionDAOFacade;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.USER_DEFINED;
@@ -81,7 +80,6 @@ public class DeciderService {
             "ENV_TASK_PUBLISH_TIMEOUT_IN_SECONDS";
 
     private long taskPublishTimeoutInMilliSeconds = 900000;
-
 
     public DeciderService(
             IDGenerator idGenerator,
@@ -285,8 +283,6 @@ public class DeciderService {
 
         return outcome;
     }
-
-
 
     @VisibleForTesting
     List<TaskModel> filterNextLoopOverTasks(
@@ -784,7 +780,8 @@ public class DeciderService {
                     // as the task is in SCHEDULED state for more than 181 days, its a system
                     // failure and the task needs to be terminated
                     // no need to consider whether the task is optional or not.
-                    throw new TerminateWorkflowException(reason, WorkflowModel.Status.TIMED_OUT, task);
+                    throw new TerminateWorkflowException(
+                            reason, WorkflowModel.Status.TIMED_OUT, task);
                 }
             } else {
                 // if the publishcount is less than MAX_PUBLISH_COUNT then publish the task and
@@ -805,7 +802,6 @@ public class DeciderService {
             }
         }
     }
-
 
     @VisibleForTesting
     void checkTaskPollTimeout(TaskDef taskDef, TaskModel task) {
