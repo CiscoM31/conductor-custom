@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
+import com.netflix.conductor.core.listener.TaskStatusListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,8 +94,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(
         classes = {
@@ -172,6 +173,10 @@ public class TestDeciderOutcomes {
         taskMappers.put(WAIT.name(), new WaitTaskMapper(parametersUtils));
         taskMappers.put(HTTP.name(), new HTTPTaskMapper(parametersUtils, metadataDAO));
 
+        TaskStatusListener mockTaskStatusListener = mock(TaskStatusListener.class);
+        ExecutionDAOFacade mockExecutionDAOFacade = mock(ExecutionDAOFacade.class);
+        doNothing().when(mockTaskStatusListener).onTaskScheduled(any());
+        doNothing().when(mockExecutionDAOFacade).updateTask(any());
         this.deciderService =
                 new DeciderService(
                         new IDGenerator(),
@@ -179,6 +184,8 @@ public class TestDeciderOutcomes {
                         metadataDAO,
                         externalPayloadStorageUtils,
                         systemTaskRegistry,
+                        mockTaskStatusListener,
+                        mockExecutionDAOFacade,
                         taskMappers,
                         Duration.ofMinutes(60));
     }

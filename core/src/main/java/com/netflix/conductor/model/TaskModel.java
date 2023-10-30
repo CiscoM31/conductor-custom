@@ -153,6 +153,10 @@ public class TaskModel {
      */
     private boolean subworkflowChanged;
 
+    private int publishCount;
+
+    private long lastPublishTime;
+
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
 
     @JsonIgnore private Map<String, Object> outputPayload = new HashMap<>();
@@ -393,6 +397,22 @@ public class TaskModel {
 
     public void setWorkerId(String workerId) {
         this.workerId = workerId;
+    }
+
+    public int getPublishCount() {
+        return publishCount;
+    }
+
+    public void setPublishCount(int publishCount) {
+        this.publishCount = publishCount;
+    }
+
+    public long getLastPublishTime() {
+        return lastPublishTime;
+    }
+
+    public void setLastPublishTime(long lastPublishTime) {
+        this.lastPublishTime = lastPublishTime;
     }
 
     @JsonIgnore
@@ -737,6 +757,12 @@ public class TaskModel {
                 + '\''
                 + ", subworkflowChanged="
                 + subworkflowChanged
+                + ", publishCount='"
+                + publishCount
+                + '\''
+                + ", lastPublishTime='"
+                + lastPublishTime
+                + '\''
                 + '}';
     }
 
@@ -790,7 +816,9 @@ public class TaskModel {
                         taskModel.getExternalOutputPayloadStoragePath())
                 && Objects.equals(getExecutionNameSpace(), taskModel.getExecutionNameSpace())
                 && Objects.equals(getIsolationGroupId(), taskModel.getIsolationGroupId())
-                && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId());
+                && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId())
+                && Objects.equals(getPublishCount(), taskModel.getPublishCount())
+                && Objects.equals(getLastPublishTime(), taskModel.getLastPublishTime());
     }
 
     @Override
@@ -837,7 +865,8 @@ public class TaskModel {
                 getIsolationGroupId(),
                 getIteration(),
                 getSubWorkflowId(),
-                isSubworkflowChanged());
+                isSubworkflowChanged(),
+                getPublishCount());
     }
 
     public Task toTask() {

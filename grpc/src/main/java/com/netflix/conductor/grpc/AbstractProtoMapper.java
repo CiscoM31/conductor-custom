@@ -573,6 +573,8 @@ public abstract class AbstractProtoMapper {
             to.setSubWorkflowId( from.getSubWorkflowId() );
         }
         to.setSubworkflowChanged( from.isSubworkflowChanged() );
+        to.setPublishCount( from.getPublishCount() );
+        to.setLastPublishTime( from.getLastPublishTime() );
         return to.build();
     }
 
@@ -632,6 +634,8 @@ public abstract class AbstractProtoMapper {
         to.setIteration( from.getIteration() );
         to.setSubWorkflowId( from.getSubWorkflowId() );
         to.setSubworkflowChanged( from.getSubworkflowChanged() );
+        to.setPublishCount( from.getPublishCount() );
+        to.setLastPublishTime( from.getLastPublishTime() );
         return to;
     }
 

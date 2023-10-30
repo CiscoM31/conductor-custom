@@ -202,6 +202,12 @@ public class Task {
     @ProtoField(id = 42)
     private boolean subworkflowChanged;
 
+    @ProtoField(id = 43)
+    private int publishCount;
+
+    @ProtoField(id = 44)
+    private long lastPublishTime;
+
     public Task() {}
 
     /**
@@ -695,6 +701,22 @@ public class Task {
         this.executionNameSpace = executionNameSpace;
     }
 
+    public int getPublishCount() {
+        return publishCount;
+    }
+
+    public void setPublishCount(int publishCount) {
+        this.publishCount = publishCount;
+    }
+
+    public long getLastPublishTime() {
+        return lastPublishTime;
+    }
+
+    public void setLastPublishTime(long lastPublishTime) {
+        this.lastPublishTime = lastPublishTime;
+    }
+
     /**
      * @return the iteration
      */
@@ -786,6 +808,8 @@ public class Task {
         copy.setIsolationGroupId(isolationGroupId);
         copy.setSubWorkflowId(getSubWorkflowId());
         copy.setSubworkflowChanged(subworkflowChanged);
+        copy.setPublishCount(publishCount);
+        copy.setLastPublishTime(lastPublishTime);
 
         return copy;
     }
@@ -908,6 +932,12 @@ public class Task {
                 + ", subworkflowChanged='"
                 + subworkflowChanged
                 + '\''
+                + ", publishCount='"
+                + publishCount
+                + '\''
+                + ", lastPublishTime='"
+                + lastPublishTime
+                + '\''
                 + '}';
     }
 
@@ -961,7 +991,9 @@ public class Task {
                         getExternalOutputPayloadStoragePath(),
                         task.getExternalOutputPayloadStoragePath())
                 && Objects.equals(getIsolationGroupId(), task.getIsolationGroupId())
-                && Objects.equals(getExecutionNameSpace(), task.getExecutionNameSpace());
+                && Objects.equals(getExecutionNameSpace(), task.getExecutionNameSpace())
+                && Objects.equals(getPublishCount(), task.getPublishCount())
+                && Objects.equals(getLastPublishTime(), task.getLastPublishTime());
     }
 
     @Override
@@ -1003,6 +1035,8 @@ public class Task {
                 getExternalInputPayloadStoragePath(),
                 getExternalOutputPayloadStoragePath(),
                 getIsolationGroupId(),
-                getExecutionNameSpace());
+                getExecutionNameSpace(),
+                getPublishCount(),
+                getLastPublishTime());
     }
 }

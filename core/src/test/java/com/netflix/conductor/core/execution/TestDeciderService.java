@@ -14,6 +14,7 @@ package com.netflix.conductor.core.execution;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -23,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import com.netflix.conductor.core.listener.TaskStatusListener;
+import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ import com.netflix.conductor.core.execution.tasks.SubWorkflow;
 import com.netflix.conductor.core.execution.tasks.SystemTaskRegistry;
 import com.netflix.conductor.core.execution.tasks.WorkflowSystemTask;
 import com.netflix.conductor.core.operation.StartWorkflowOperation;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.utils.ExternalPayloadStorageUtils;
 import com.netflix.conductor.core.utils.IDGenerator;
 import com.netflix.conductor.core.utils.ParametersUtils;
@@ -75,10 +77,12 @@ import static org.mockito.Mockito.*;
         classes = {TestObjectMapperConfiguration.class, TestDeciderService.TestConfiguration.class})
 @RunWith(SpringRunner.class)
 public class TestDeciderService {
-
+    private static final Logger logger = LoggerFactory.getLogger(TestDeciderService.class);
     @Configuration
     @ComponentScan(basePackageClasses = TaskMapper.class) // loads all TaskMapper beans
     public static class TestConfiguration {
+
+
 
         @Bean(TASK_TYPE_SUB_WORKFLOW)
         public SubWorkflow subWorkflow(ObjectMapper objectMapper) {
@@ -122,6 +126,17 @@ public class TestDeciderService {
         }
     }
 
+    private void updateEnv(String name, String val) {
+        try {
+            Map<String, String> env = System.getenv();
+            Field field = env.getClass().getDeclaredField("m");
+            field.setAccessible(true);
+            ((Map<String, String>) field.get(env)).put(name, val);
+        } catch (Exception ee) {
+            logger.error("Error while setting system enviroument parameter", ee);
+        }
+    }
+
     private DeciderService deciderService;
 
     private ExternalPayloadStorageUtils externalPayloadStorageUtils;
@@ -150,14 +165,17 @@ public class TestDeciderService {
     @Before
     public void setup() {
         externalPayloadStorageUtils = mock(ExternalPayloadStorageUtils.class);
-
+        updateEnv("ENV_TASK_PUBLISH_TIMEOUT_IN_SECONDS", "60");
         WorkflowDef workflowDef = new WorkflowDef();
         workflowDef.setName("TestDeciderService");
         workflowDef.setVersion(1);
         TaskDef taskDef = new TaskDef();
         when(metadataDAO.getTaskDef(any())).thenReturn(taskDef);
         when(metadataDAO.getLatestWorkflowDef(any())).thenReturn(Optional.of(workflowDef));
-
+        TaskStatusListener mockTaskStatusListener = mock(TaskStatusListener.class);
+        ExecutionDAOFacade mockExecutionDAOFacade = mock(ExecutionDAOFacade.class);
+        doNothing().when(mockTaskStatusListener).onTaskScheduled(any());
+        doNothing().when(mockExecutionDAOFacade).updateTask(any());
         deciderService =
                 new DeciderService(
                         new IDGenerator(),
@@ -165,6 +183,8 @@ public class TestDeciderService {
                         metadataDAO,
                         externalPayloadStorageUtils,
                         systemTaskRegistry,
+                        mockTaskStatusListener,
+                        mockExecutionDAOFacade,
                         taskMappers,
                         Duration.ofMinutes(60));
     }
@@ -204,6 +224,53 @@ public class TestDeciderService {
         assertEquals(
                 workflow.getTasks().get(0).getStatus().name(),
                 taskInput.get("task2Status")); // task2 and task3 are the tasks respectively
+    }
+
+    @Test
+    public void testCheckTaskPublishTimeout() {
+        TaskDef taskType = new TaskDef();
+        taskType.setName("test");
+        taskType.setTimeoutPolicy(TimeoutPolicy.RETRY);
+        taskType.setPollTimeoutSeconds(1);
+
+        TaskModel task = new TaskModel();
+        task.setTaskType(taskType.getName());
+        task.setScheduledTime(System.currentTimeMillis() - 2_000);
+        task.setStatus(TaskModel.Status.IN_PROGRESS);
+        WorkflowTask workflowTask = new WorkflowTask();
+        workflowTask.setWorkflowTaskType(SIMPLE);
+        task.setWorkflowTask(workflowTask);
+        deciderService.checkTaskPublishTimeout(taskType, task);
+
+        TaskModel taskSimple = new TaskModel();
+        taskSimple.setTaskType(taskType.getName());
+        taskSimple.setScheduledTime(System.currentTimeMillis() - 2_000);
+        taskSimple.setStatus(TaskModel.Status.SCHEDULED);
+        taskSimple.setWorkflowTask(workflowTask);
+        deciderService.checkTaskPublishTimeout(taskType, taskSimple);
+
+        TaskModel taskPublishCount = new TaskModel();
+        taskPublishCount.setTaskType(taskType.getName());
+        taskPublishCount.setScheduledTime(System.currentTimeMillis() - 120_000);
+        taskPublishCount.setStatus(TaskModel.Status.SCHEDULED);
+        taskPublishCount.setWorkflowTask(workflowTask);
+        deciderService.checkTaskPublishTimeout(taskType, taskPublishCount);
+        assertEquals(1, taskPublishCount.getPublishCount());
+
+        taskPublishCount.setLastPublishTime(System.currentTimeMillis() - 120000);
+        deciderService.checkTaskPublishTimeout(taskType, taskPublishCount);
+        assertEquals(2, taskPublishCount.getPublishCount());
+
+        boolean exceptionCreated = false;
+        try {
+            taskPublishCount.setLastPublishTime(System.currentTimeMillis() - 120000);
+            taskPublishCount.setScheduledTime(System.currentTimeMillis() - 182 * 24 * 3600 * 1000L);
+            deciderService.checkTaskPublishTimeout(taskType, taskPublishCount);
+        } catch (TerminateWorkflowException excep) {
+            exceptionCreated = true;
+        }
+        Assert.assertTrue(exceptionCreated);
+        Assert.assertEquals(taskPublishCount.getStatus(), TaskModel.Status.TIMED_OUT);
     }
 
     @Test
