@@ -189,6 +189,10 @@ public class TestWorkflowExecutor {
         taskMappers.put(HTTP.name(), new HTTPTaskMapper(parametersUtils, metadataDAO));
         taskMappers.put(LAMBDA.name(), new LambdaTaskMapper(parametersUtils, metadataDAO));
         taskMappers.put(INLINE.name(), new InlineTaskMapper(parametersUtils, metadataDAO));
+        TaskStatusListener mockTaskStatusListener = mock(TaskStatusListener.class);
+        ExecutionDAOFacade mockExecutionDAOFacade = mock(ExecutionDAOFacade.class);
+        doNothing().when(mockTaskStatusListener).onTaskScheduled(any());
+        doNothing().when(mockExecutionDAOFacade).updateTask(any());
 
         DeciderService deciderService =
                 new DeciderService(
@@ -197,6 +201,8 @@ public class TestWorkflowExecutor {
                         metadataDAO,
                         externalPayloadStorageUtils,
                         systemTaskRegistry,
+                        mockTaskStatusListener,
+                        mockExecutionDAOFacade,
                         taskMappers,
                         Duration.ofMinutes(60));
         MetadataMapperService metadataMapperService = new MetadataMapperService(metadataDAO);

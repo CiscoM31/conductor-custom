@@ -126,6 +126,10 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
                     workflow.getWorkflowName(),
                     String.valueOf(workflow.getWorkflowVersion()),
                     workflow.getOwnerApp());
+            LOGGER.info(
+                    "Start workflow request completed for workflowId {} correlationId {}",
+                    workflowId,
+                    input.getCorrelationId());
             return workflowId;
         } catch (Exception e) {
             Monitors.recordWorkflowStartError(
