@@ -1,3 +1,4 @@
+group = 'com.cisco.conductor'
 dependencies {
     implementation project(':conductor-core')
     compileOnly 'org.springframework.boot:spring-boot-starter'
