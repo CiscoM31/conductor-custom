@@ -94,6 +94,14 @@ public class RedisLockConfiguration {
                         .setPassword(redisServerPassword)
                         .setTimeout(connectionTimeout);
                 break;
+            case REPLICATED:
+                LOGGER.info("Setting up Redis Replicated Servers for RedisLockConfiguration");
+                redisConfig
+                        .useReplicatedServers()
+                        .setScanInterval(2000)
+                        .setPassword(redisServerPassword)
+                        .setTimeout(connectionTimeout)
+                        .addNodeAddress(redisServerAddress.split(","));
         }
 
         return (Redisson) Redisson.create(redisConfig);

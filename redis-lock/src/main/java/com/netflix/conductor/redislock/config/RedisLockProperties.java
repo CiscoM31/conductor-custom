@@ -146,6 +146,7 @@ public class RedisLockProperties {
     public enum REDIS_SERVER_TYPE {
         SINGLE,
         CLUSTER,
-        SENTINEL
+        SENTINEL,
+        REPLICATED
     }
 }
