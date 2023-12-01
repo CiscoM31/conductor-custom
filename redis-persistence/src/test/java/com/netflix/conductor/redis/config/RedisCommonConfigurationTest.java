@@ -15,9 +15,9 @@ public class RedisCommonConfigurationTest {
         RedisCommonConfiguration config = new RedisCommonConfiguration();
         assert(config.getShardName().equals("custom"));
         updateEnv("HOSTNAME","galaxy-0");
-        assert(config.getShardName().equals("0"));
+        assert(config.getShardName().equals("galaxy-0"));
         updateEnv("HOSTNAME","galaxy-0.svc.cluster.local");
-        assert(config.getShardName().equals("0"));
+        assert(config.getShardName().equals("galaxy-0"));
     }
 
 

@@ -72,7 +72,7 @@ public class RedisCommonConfiguration {
             if (dotIndex > 0) {
                 podName = podName.substring(0, dotIndex);
             }
-            shardName = podName.substring(podName.length() - 1);
+            shardName = podName;
         }
         return shardName;
     }
