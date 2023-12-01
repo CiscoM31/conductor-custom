@@ -46,6 +46,8 @@ public class RedisCommonConfiguration {
     public static final String DEFAULT_CLIENT_INJECTION_NAME = "DefaultJedisCommands";
     public static final String READ_CLIENT_INJECTION_NAME = "ReadJedisCommands";
 
+    private static final String HOSTNAME = "HOSTNAME";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisCommonConfiguration.class);
 
     @Bean
@@ -57,7 +59,22 @@ public class RedisCommonConfiguration {
         }
         String localDC =
                 properties.getAvailabilityZone().replaceAll(properties.getDataCenterRegion(), "");
-        return new SingleShardSupplier("custom");
+        String shardName = getShardName();
+        LOGGER.info("Redis queue shard name set to {}", shardName);
+        return new SingleShardSupplier(shardName);
+    }
+
+    public String getShardName() {
+        String shardName = "custom";
+        String podName = System.getenv(HOSTNAME);
+        if (podName != null && podName.length() != 0) {
+            int dotIndex = podName.indexOf(".");
+            if (dotIndex > 0) {
+                podName = podName.substring(0, dotIndex);
+            }
+            shardName = podName.substring(podName.length() - 1);
+        }
+        return shardName;
     }
 
     @Bean
