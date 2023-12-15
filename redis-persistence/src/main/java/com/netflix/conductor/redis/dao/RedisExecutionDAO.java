@@ -37,6 +37,7 @@ import com.netflix.conductor.redis.jedis.JedisProxy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import redis.clients.jedis.params.SetParams;
 
 @Component
 @Conditional(AnyRedisCondition.class)
@@ -58,6 +59,8 @@ public class RedisExecutionDAO extends BaseDynoDAO
     private static final String WORKFLOW_DEF_TO_WORKFLOWS = "WORKFLOW_DEF_TO_WORKFLOWS";
     private static final String CORR_ID_TO_WORKFLOWS = "CORR_ID_TO_WORKFLOWS";
     private static final String EVENT_EXECUTION = "EVENT_EXECUTION";
+
+    private static final String SIMPLE_LOCK="SIMPLE_LOCK";
     private final int ttlEventExecutionSeconds;
 
     public RedisExecutionDAO(
@@ -107,6 +110,29 @@ public class RedisExecutionDAO extends BaseDynoDAO
                 });
 
         return tasks;
+    }
+
+    /**
+     * Adds the lock with key if it does not exist with expiration time as timeToExpireInSeconds.
+     * @param key
+     * @param value
+     * @param timeToExpireInSeconds
+     * @return null if unable to add, OK if successfully added
+     */
+    public String addLock(String key,String value,int timeToExpireInSeconds) {
+        SetParams setParams = new SetParams();
+        setParams = setParams.nx().ex(timeToExpireInSeconds);
+        return jedisProxy.set(nsKey(SIMPLE_LOCK,key),value,setParams);
+    }
+
+
+    /**
+     * Removes the lock with key
+     * @param key
+     * @return 1 is successful, 0 if unsuccessful
+     */
+    public Long removeLock(String key) {
+        return jedisProxy.del(nsKey(SIMPLE_LOCK,key));
     }
 
     @Override

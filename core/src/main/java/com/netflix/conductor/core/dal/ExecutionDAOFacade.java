@@ -757,6 +757,14 @@ public class ExecutionDAOFacade {
         }
     }
 
+    public String addLock(String key,String value,int leaseTime) {
+        return executionDAO.addLock(key,value,leaseTime);
+    }
+
+    public Long removeLock(String key){
+        return executionDAO.removeLock(key);
+    }
+
     class DelayWorkflowUpdate implements Runnable {
 
         private final String workflowId;

@@ -1013,6 +1013,7 @@ public class WorkflowExecutor {
         StopWatch watch = new StopWatch();
         watch.start();
         if (!executionLockService.acquireLock(workflowId)) {
+            LOGGER.info("Unable to acquire lock for workflow {}",workflowId);
             return null;
         }
         try {
