@@ -12,16 +12,18 @@
  */
 package com.netflix.conductor.core.sync.simpleredis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.netflix.conductor.core.config.ConductorProperties;
-import com.netflix.conductor.core.dal.ExecutionDAOFacade;
-import com.netflix.conductor.core.sync.Lock;
+import java.util.Date;
+import java.util.concurrent.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.concurrent.*;
+import com.netflix.conductor.core.config.ConductorProperties;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
+import com.netflix.conductor.core.sync.Lock;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class SimpleRedisLock implements Lock {
 
@@ -31,47 +33,135 @@ public class SimpleRedisLock implements Lock {
     private ExecutionDAOFacade facade = null;
     private ConductorProperties properties = null;
 
+    private Integer waitObject = Integer.valueOf(1);
+
     public SimpleRedisLock(ExecutionDAOFacade facade, ConductorProperties properties) {
-        this.facade=facade;
-        this.properties=properties;
+        this.facade = facade;
+        this.properties = properties;
     }
 
+    /**
+     * acquireLock for the lockId with lockTimeToTry configured in properties
+     *
+     * @param lockId resource to lock on
+     */
     public void acquireLock(String lockId) {
-        acquireLock(lockId,properties.getLockTimeToTry().toMillis(),TimeUnit.MILLISECONDS);
+        acquireLock(lockId, properties.getLockTimeToTry().toMillis(), TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * acquireLock acquireLock with the given lockId and timeToTry in TimeUnit
+     *
+     * @param lockId resource to lock on
+     * @param timeToTry blocks up to timeToTry duration in attempt to acquire the lock
+     * @param unit time unit
+     * @return
+     */
     public boolean acquireLock(String lockId, long timeToTry, TimeUnit unit) {
-        return acquireLock(lockId,properties.getLockTimeToTry().toMillis(),properties.getLockLeaseTime().toMillis(),TimeUnit.MILLISECONDS);
+        return acquireLock(
+                lockId,
+                properties.getLockTimeToTry().toMillis(),
+                properties.getLockLeaseTime().toMillis(),
+                TimeUnit.MILLISECONDS);
     }
 
-    public boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit)  {
-        int leaseTimeSeconds = (int) properties.getLockLeaseTime().getSeconds();
-        if(unit.equals(TimeUnit.MILLISECONDS)) {
-            leaseTimeSeconds = (int) leaseTime/1000;
+    /**
+     * acquireLock with the given lockId, timeToTry and leaseTime. Till timeToTry, for each 100
+     * milliseconds, it tries to acquire the lock. It holds the lock for a max of leaseTime unless
+     * otherwise someone releases/deletes the lock
+     *
+     * @param lockId resource to lock on
+     * @param timeToTry blocks up to timeToTry duration in attempt to acquire the lock
+     * @param leaseTime Lock lease expiration duration.
+     * @param unit time unit
+     * @return
+     */
+    public boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
+        LOGGER.info(
+                "Acquiring lock for workflow id {} timeToTry {} leaseTime{}",
+                lockId,
+                timeToTry,
+                leaseTime);
+        int leaseTimeInSeconds = getLeaseTimeInSeconds(leaseTime, unit);
+        String lockValue = getLockValue(lockId);
+        return tryLock(lockId, lockValue, timeToTry, leaseTimeInSeconds);
+    }
+
+    /**
+     * converts TimeUnit leaseTime to leaseTimeInSeconds as redis accepts leasetime in seconds
+     *
+     * @param leaseTime
+     * @param unit
+     * @return
+     */
+    private int getLeaseTimeInSeconds(long leaseTime, TimeUnit unit) {
+        int leaseTimeSeconds = 0;
+        if (unit.equals(TimeUnit.SECONDS)) {
+            leaseTimeSeconds = (int) leaseTime;
+        } else {
+            leaseTimeSeconds = (int) leaseTime / 1000;
         }
+        return leaseTimeSeconds;
+    }
+
+    /** Gets the lock value in json. currently only startTime is added. */
+    private String getLockValue(String lockId) {
         String value = "{}";
         try {
             ObjectNode valueNode = objectMapper.createObjectNode();
-            valueNode.put("time", new Date().toString());
+            valueNode.put("lockStartTime", new Date().toString());
             value = objectMapper.writeValueAsString(valueNode);
+        } catch (Exception ee) {
+            LOGGER.error("Error while serializing value node {}", lockId, ee);
         }
-        catch(Exception ee) {
-            LOGGER.error("Error while serializing value node",ee);
-        }
-
-        String result = facade.addLock(lockId,value,leaseTimeSeconds);
-        if("OK".equals(result)) {
-            return true;
-        } else {
-            return false;
-        }
+        return value;
     }
 
+    /**
+     * Tries to get the lock till timeToTry. If it gets the lock in any of the try, it returns
+     * immediately. Else it tries till timeToTry. Returns false once the time reaches beyond
+     * timeToTry.
+     *
+     * @param lockId
+     * @param lockValue
+     * @param timeToTry
+     * @param leaseTimeSeconds
+     * @return
+     */
+    private boolean tryLock(String lockId, String lockValue, long timeToTry, int leaseTimeSeconds) {
+        long tryStartTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - tryStartTime) <= timeToTry) {
+            String result = facade.addLock(lockId, lockValue, leaseTimeSeconds);
+            if ("OK".equals(result)) {
+                return true;
+            } else {
+                synchronized (waitObject) {
+                    try {
+                        waitObject.wait(100);
+                    } catch (Exception ee) {
+                        LOGGER.error("Error while waiting for lock {}", lockId, ee);
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
+    /**
+     * releases the lock immediately. deletes the lock entry in redis
+     *
+     * @param lockId resource to lock on
+     */
     public void releaseLock(String lockId) {
         facade.removeLock(lockId);
     }
 
+    /**
+     * releases the lock immediately
+     *
+     * @param lockId resource to lock on
+     */
     public void deleteLock(String lockId) {
         releaseLock(lockId);
     }

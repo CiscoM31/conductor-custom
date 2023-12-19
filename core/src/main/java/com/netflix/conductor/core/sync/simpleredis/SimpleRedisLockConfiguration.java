@@ -12,19 +12,22 @@
  */
 package com.netflix.conductor.core.sync.simpleredis;
 
-import com.netflix.conductor.core.config.ConductorProperties;
-import com.netflix.conductor.core.dal.ExecutionDAOFacade;
-import com.netflix.conductor.core.sync.Lock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.netflix.conductor.core.config.ConductorProperties;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
+import com.netflix.conductor.core.sync.Lock;
+
 @Configuration
-@ConditionalOnProperty(name = "conductor.workflow-execution-lock.type", havingValue = "simple_redis")
+@ConditionalOnProperty(
+        name = "conductor.workflow-execution-lock.type",
+        havingValue = "simple_redis")
 public class SimpleRedisLockConfiguration {
 
     @Bean
     public Lock provideLock(ExecutionDAOFacade facade, ConductorProperties conductorProperties) {
-        return new SimpleRedisLock(facade,conductorProperties);
+        return new SimpleRedisLock(facade, conductorProperties);
     }
 }
