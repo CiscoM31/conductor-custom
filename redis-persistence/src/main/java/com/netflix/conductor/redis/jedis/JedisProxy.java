@@ -103,7 +103,7 @@ public class JedisProxy {
     }
 
     public String set(String key, String value, SetParams setParams) {
-        return jedisCommands.set(key,value,setParams);
+        return jedisCommands.set(key, value, setParams);
     }
 
     public Long zadd(String key, double score, String member) {
