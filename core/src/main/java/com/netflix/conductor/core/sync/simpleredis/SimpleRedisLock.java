@@ -77,11 +77,6 @@ public class SimpleRedisLock implements Lock {
      * @return
      */
     public boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
-        LOGGER.info(
-                "Acquiring lock for workflow id {} timeToTry {} leaseTime{}",
-                lockId,
-                timeToTry,
-                leaseTime);
         int leaseTimeInSeconds = getLeaseTimeInSeconds(leaseTime, unit);
         String lockValue = getLockValue(lockId);
         return tryLock(lockId, lockValue, timeToTry, leaseTimeInSeconds);
