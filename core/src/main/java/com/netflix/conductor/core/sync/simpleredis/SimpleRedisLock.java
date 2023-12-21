@@ -14,6 +14,7 @@ package com.netflix.conductor.core.sync.simpleredis;
 
 import java.util.Date;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,11 @@ public class SimpleRedisLock implements Lock {
     private ObjectMapper objectMapper = new ObjectMapper();
     private ExecutionDAOFacade facade = null;
     private ConductorProperties properties = null;
+
+    // this thread local has the lockId. If the same thread is asking for the lock, this thread
+    // local has the lockid and returns true with out
+    // going to redis
+    private ThreadLocal<AtomicInteger> reentrantThreadLocal = new ThreadLocal();
 
     private Integer waitObject = Integer.valueOf(1);
 
@@ -77,9 +83,25 @@ public class SimpleRedisLock implements Lock {
      * @return
      */
     public boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
+        // if thread local is having the value, then same thread is requiring the lock second time.
+        // return true for that.
+        AtomicInteger lockCount = reentrantThreadLocal.get();
+        if (lockCount != null) {
+            lockCount.set(lockCount.get() + 1);
+            LOGGER.info("Same thread acquiring lock for lockId {} with lockCount {}", lockCount);
+            return true;
+        }
         int leaseTimeInSeconds = getLeaseTimeInSeconds(leaseTime, unit);
         String lockValue = getLockValue(lockId);
-        return tryLock(lockId, lockValue, timeToTry, leaseTimeInSeconds);
+        boolean redisLock = tryLock(lockId, lockValue, timeToTry, leaseTimeInSeconds);
+        if (redisLock) {
+            // if lock is acquired then update the thread local so that it will be useful for
+            // subsequent requests from the same thread.
+            lockCount = new AtomicInteger();
+            lockCount.set(1);
+            reentrantThreadLocal.set(lockCount);
+        }
+        return redisLock;
     }
 
     /**
@@ -104,7 +126,10 @@ public class SimpleRedisLock implements Lock {
         String value = "{}";
         try {
             ObjectNode valueNode = objectMapper.createObjectNode();
-            valueNode.put("lockStartTime", new Date().toString());
+            long currentTime = System.currentTimeMillis();
+            valueNode.put("lockStartTime", new Date(currentTime).toString());
+            valueNode.put("lockStartTimeMillis",currentTime);
+
             value = objectMapper.writeValueAsString(valueNode);
         } catch (Exception ee) {
             LOGGER.error("Error while serializing value node {}", lockId, ee);
@@ -132,7 +157,7 @@ public class SimpleRedisLock implements Lock {
             } else {
                 synchronized (waitObject) {
                     try {
-                        waitObject.wait(100);
+                        waitObject.wait(50);
                     } catch (Exception ee) {
                         LOGGER.error("Error while waiting for lock {}", lockId, ee);
                         return false;
@@ -149,7 +174,18 @@ public class SimpleRedisLock implements Lock {
      * @param lockId resource to lock on
      */
     public void releaseLock(String lockId) {
-        facade.removeLock(lockId);
+        AtomicInteger lockCount = reentrantThreadLocal.get();
+        if (lockCount != null) {
+            lockCount.set(lockCount.get() - 1);
+            if (lockCount.get() <= 0) {
+                facade.removeLock(lockId);
+                reentrantThreadLocal.remove();
+            } else {
+                return;
+            }
+        } else {
+            facade.removeLock(lockId);
+        }
     }
 
     /**

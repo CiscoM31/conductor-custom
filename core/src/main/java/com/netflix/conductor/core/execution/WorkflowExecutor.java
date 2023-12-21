@@ -13,6 +13,8 @@
 package com.netflix.conductor.core.execution;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -87,6 +89,8 @@ public class WorkflowExecutor {
     private final ApplicationEventPublisher eventPublisher;
     private long activeWorkerLastPollMs;
     private final ExecutionLockService executionLockService;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     private final Predicate<PollData> validateLastPolledTime =
             pollData ->
@@ -1028,6 +1032,7 @@ public class WorkflowExecutor {
         } finally {
             executionLockService.releaseLock(workflowId);
             watch.stop();
+            LOGGER.info("decide method took {} milliseconds", watch.getTime());
             Monitors.recordWorkflowDecisionTime(watch.getTime());
         }
     }
