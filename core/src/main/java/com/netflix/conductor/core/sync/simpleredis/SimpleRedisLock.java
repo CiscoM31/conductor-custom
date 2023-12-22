@@ -128,7 +128,7 @@ public class SimpleRedisLock implements Lock {
             ObjectNode valueNode = objectMapper.createObjectNode();
             long currentTime = System.currentTimeMillis();
             valueNode.put("lockStartTime", new Date(currentTime).toString());
-            valueNode.put("lockStartTimeMillis",currentTime);
+            valueNode.put("lockStartTimeMillis", currentTime);
 
             value = objectMapper.writeValueAsString(valueNode);
         } catch (Exception ee) {
