@@ -13,8 +13,6 @@
 package com.netflix.conductor.core.execution;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -89,9 +87,6 @@ public class WorkflowExecutor {
     private final ApplicationEventPublisher eventPublisher;
     private long activeWorkerLastPollMs;
     private final ExecutionLockService executionLockService;
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
-
     private final Predicate<PollData> validateLastPolledTime =
             pollData ->
                     pollData.getLastPollTime()
@@ -1021,7 +1016,6 @@ public class WorkflowExecutor {
             return null;
         }
         try {
-
             WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
             if (workflow == null) {
                 // This can happen if the workflowId is incorrect

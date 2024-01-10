@@ -44,6 +44,7 @@ public class SimpleRedisLock implements Lock {
     public SimpleRedisLock(ExecutionDAOFacade facade, ConductorProperties properties) {
         this.facade = facade;
         this.properties = properties;
+        LOGGER.info("SimpleRedisLock is configured and initialized");
     }
 
     /**

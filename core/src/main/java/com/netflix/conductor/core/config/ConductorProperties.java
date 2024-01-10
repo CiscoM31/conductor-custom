@@ -66,7 +66,7 @@ public class ConductorProperties {
     /**
      * The time (in milliseconds) for which the thread will block in an attempt to acquire the lock.
      */
-    private Duration lockTimeToTry = Duration.ofMillis(500);
+    private Duration lockTimeToTry = Duration.ofMillis(1000);
 
     /**
      * The time (in seconds) that is used to consider if a worker is actively polling for a task.
