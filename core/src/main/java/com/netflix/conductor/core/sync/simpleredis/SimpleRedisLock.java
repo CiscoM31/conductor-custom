@@ -67,7 +67,7 @@ public class SimpleRedisLock implements Lock {
     public boolean acquireLock(String lockId, long timeToTry, TimeUnit unit) {
         return acquireLock(
                 lockId,
-                properties.getLockTimeToTry().toMillis(),
+                timeToTry,
                 properties.getLockLeaseTime().toMillis(),
                 TimeUnit.MILLISECONDS);
     }
