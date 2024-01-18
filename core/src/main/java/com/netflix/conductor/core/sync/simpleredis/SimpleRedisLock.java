@@ -86,7 +86,6 @@ public class SimpleRedisLock implements Lock {
         AtomicInteger lockCount = reentrantThreadLocal.get();
         if (lockCount != null) {
             lockCount.set(lockCount.get() + 1);
-            LOGGER.info("Same thread acquiring lock for lockId {} with lockCount {}", lockCount);
             return true;
         }
         int leaseTimeInSeconds = getLeaseTimeInSeconds(leaseTime, unit);
