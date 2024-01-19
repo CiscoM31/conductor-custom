@@ -112,8 +112,11 @@ public class SimpleRedisLock implements Lock {
         int leaseTimeSeconds = 0;
         if (unit.equals(TimeUnit.SECONDS)) {
             leaseTimeSeconds = (int) leaseTime;
-        } else {
+        } else if (unit.equals(TimeUnit.MILLISECONDS)) {
             leaseTimeSeconds = (int) leaseTime / 1000;
+        } else {
+            throw new IllegalArgumentException(
+                    "TimeUnit needs to be either SECONDS or MILLISECONDS");
         }
         return leaseTimeSeconds;
     }

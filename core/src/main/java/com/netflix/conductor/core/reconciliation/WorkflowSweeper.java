@@ -81,6 +81,13 @@ public class WorkflowSweeper {
 
     public void sweep(String workflowId) {
         WorkflowModel workflow = null;
+        // as the workflow is loaded and then lock is acquired for decide() method, there is a
+        // chance that UpdateTask() and this method
+        // shall load the same workflow from the database and each operating on the same object in
+        // the decide method. Because of this
+        // two notifications for the same task is generated one from this method and another from
+        // updateTask(). So we get the lock
+        // before loading the workflow and execute the decide method.
         if (!executionLockService.acquireLock(workflowId)) {
             LOGGER.info(
                     "Unable to acquire lock for sweeper workflowId {}. Will try in the next attempt",
