@@ -87,7 +87,6 @@ public class WorkflowExecutor {
     private final ApplicationEventPublisher eventPublisher;
     private long activeWorkerLastPollMs;
     private final ExecutionLockService executionLockService;
-
     private final Predicate<PollData> validateLastPolledTime =
             pollData ->
                     pollData.getLastPollTime()
@@ -1013,10 +1012,10 @@ public class WorkflowExecutor {
         StopWatch watch = new StopWatch();
         watch.start();
         if (!executionLockService.acquireLock(workflowId)) {
+            LOGGER.info("Unable to acquire lock for workflow {}", workflowId);
             return null;
         }
         try {
-
             WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
             if (workflow == null) {
                 // This can happen if the workflowId is incorrect
@@ -1027,6 +1026,7 @@ public class WorkflowExecutor {
         } finally {
             executionLockService.releaseLock(workflowId);
             watch.stop();
+            LOGGER.info("decide method took {} milliseconds", watch.getTime());
             Monitors.recordWorkflowDecisionTime(watch.getTime());
         }
     }

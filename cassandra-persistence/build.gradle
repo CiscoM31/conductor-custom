@@ -12,6 +12,8 @@
  */
 apply plugin: 'groovy'
 
+group = 'com.cisco.conductor'
+
 dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter'
 

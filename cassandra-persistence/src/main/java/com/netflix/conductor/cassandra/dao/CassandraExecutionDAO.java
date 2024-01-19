@@ -872,4 +872,14 @@ public class CassandraExecutionDAO extends CassandraBaseDAO
         throw new UnsupportedOperationException(
                 "This method is not implemented in CassandraExecutionDAO. Please use ExecutionDAOFacade instead.");
     }
+
+    @Override
+    public String addLock(String key, String value, int expireTimeInSeconds) {
+        return null;
+    }
+
+    @Override
+    public Long removeLock(String key) {
+        return null;
+    }
 }

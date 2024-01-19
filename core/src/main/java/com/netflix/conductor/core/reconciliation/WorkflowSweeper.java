@@ -36,6 +36,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.TaskModel.Status;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.service.ExecutionLockService;
 
 import static com.netflix.conductor.core.config.SchedulerConfiguration.SWEEPER_EXECUTOR_NAME;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
@@ -51,6 +52,8 @@ public class WorkflowSweeper {
     private final QueueDAO queueDAO;
     private final ExecutionDAOFacade executionDAOFacade;
 
+    private final ExecutionLockService executionLockService;
+
     private static final String CLASS_NAME = WorkflowSweeper.class.getSimpleName();
 
     @Autowired
@@ -59,13 +62,15 @@ public class WorkflowSweeper {
             Optional<WorkflowRepairService> workflowRepairService,
             ConductorProperties properties,
             QueueDAO queueDAO,
-            ExecutionDAOFacade executionDAOFacade) {
+            ExecutionDAOFacade executionDAOFacade,
+            ExecutionLockService executionLockService) {
         this.properties = properties;
         this.queueDAO = queueDAO;
         this.workflowExecutor = workflowExecutor;
         this.executionDAOFacade = executionDAOFacade;
         this.workflowRepairService = workflowRepairService.orElse(null);
-        LOGGER.info("WorkflowSweeper initialized.");
+        this.executionLockService = executionLockService;
+        LOGGER.info("WorkflowSweeper initialized");
     }
 
     @Async(SWEEPER_EXECUTOR_NAME)
@@ -76,6 +81,19 @@ public class WorkflowSweeper {
 
     public void sweep(String workflowId) {
         WorkflowModel workflow = null;
+        // as the workflow is loaded and then lock is acquired for decide() method, there is a
+        // chance that UpdateTask() and this method
+        // shall load the same workflow from the database and each operating on the same object in
+        // the decide method. Because of this
+        // two notifications for the same task is generated one from this method and another from
+        // updateTask(). So we get the lock
+        // before loading the workflow and execute the decide method.
+        if (!executionLockService.acquireLock(workflowId)) {
+            LOGGER.info(
+                    "Unable to acquire lock for sweeper workflowId {}. Will try in the next attempt",
+                    workflowId);
+            return;
+        }
         try {
             WorkflowContext workflowContext = new WorkflowContext(properties.getAppId());
             WorkflowContext.set(workflowContext);
@@ -102,6 +120,8 @@ public class WorkflowSweeper {
         } catch (Exception e) {
             Monitors.error(CLASS_NAME, "sweep");
             LOGGER.error("Error running sweep for " + workflowId, e);
+        } finally {
+            executionLockService.releaseLock(workflowId);
         }
         long workflowOffsetTimeout =
                 workflowOffsetWithJitter(properties.getWorkflowOffsetTimeout().getSeconds());
