@@ -1026,7 +1026,6 @@ public class WorkflowExecutor {
         } finally {
             executionLockService.releaseLock(workflowId);
             watch.stop();
-            LOGGER.info("decide method took {} milliseconds", watch.getTime());
             Monitors.recordWorkflowDecisionTime(watch.getTime());
         }
     }
