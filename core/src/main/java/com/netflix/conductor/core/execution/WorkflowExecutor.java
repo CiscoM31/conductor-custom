@@ -1397,6 +1397,9 @@ public class WorkflowExecutor {
                 task.getWorkflowPriority(),
                 taskQueueName,
                 task.getCallbackAfterSeconds());
+        // Notify Task Push Notification
+        LOGGER.debug("Add task '{}' to publish.", task.getTaskId());
+        taskStatusListener.onTaskScheduled(task);
     }
 
     @VisibleForTesting
