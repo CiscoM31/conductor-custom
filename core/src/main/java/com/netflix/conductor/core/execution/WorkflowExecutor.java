@@ -1026,7 +1026,6 @@ public class WorkflowExecutor {
         } finally {
             executionLockService.releaseLock(workflowId);
             watch.stop();
-            LOGGER.info("decide method took {} milliseconds", watch.getTime());
             Monitors.recordWorkflowDecisionTime(watch.getTime());
         }
     }
@@ -1398,6 +1397,9 @@ public class WorkflowExecutor {
                 task.getWorkflowPriority(),
                 taskQueueName,
                 task.getCallbackAfterSeconds());
+        // Notify Task Push Notification
+        LOGGER.debug("Add task '{}' to publish.", task.getTaskId());
+        taskStatusListener.onTaskScheduled(task);
     }
 
     @VisibleForTesting
