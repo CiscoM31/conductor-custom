@@ -1577,16 +1577,6 @@ public class WorkflowExecutor {
     private void addTaskToQueue(final List<TaskModel> tasks) {
         for (TaskModel task : tasks) {
             addTaskToQueue(task);
-            // notify TaskStatusListener
-            try {
-                taskStatusListener.onTaskScheduled(task);
-            } catch (Exception e) {
-                String errorMsg =
-                        String.format(
-                                "Error while notifying TaskStatusListener: %s for workflow: %s",
-                                task.getTaskId(), task.getWorkflowInstanceId());
-                LOGGER.error(errorMsg, e);
-            }
         }
     }
 
