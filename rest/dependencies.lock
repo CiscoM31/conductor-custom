@@ -1,7 +1,7 @@
 {
     "annotationProcessor": {
         "org.springframework.boot:spring-boot-configuration-processor": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         }
     },
     "compileClasspath": {
@@ -66,7 +66,7 @@
             "locked": "1.6.15"
         },
         "org.springframework.boot:spring-boot-starter-web": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.yaml:snakeyaml": {
             "locked": "2.0"
@@ -298,7 +298,7 @@
             "locked": "1.6.15"
         },
         "org.springframework.boot:spring-boot-starter-web": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.yaml:snakeyaml": {
             "firstLevelTransitive": [
@@ -380,13 +380,13 @@
             "locked": "1.6.15"
         },
         "org.springframework.boot:spring-boot-starter-log4j2": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.springframework.boot:spring-boot-starter-web": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.yaml:snakeyaml": {
             "locked": "2.0"
@@ -627,13 +627,13 @@
             "locked": "1.6.15"
         },
         "org.springframework.boot:spring-boot-starter-log4j2": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.springframework.boot:spring-boot-starter-web": {
-            "locked": "2.7.16"
+            "locked": "2.7.18"
         },
         "org.yaml:snakeyaml": {
             "firstLevelTransitive": [
